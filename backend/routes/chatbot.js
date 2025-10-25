@@ -84,21 +84,44 @@ Provide a helpful response focusing on the platform's content and features.`;
   } catch (error) {
     console.error('Chatbot error:', error);
     
-    // Fallback response if Gemini API fails
-    const fallbackResponse = `I'm here to help you navigate the KLH Peer Learning Platform! 
-
-I can assist you with:
-- Finding videos by subject or topic
-- Suggesting study playlists
-- Explaining platform features
-- Helping with content discovery
-
-What would you like to know about our educational content?`;
+    // Intelligent fallback response without AI
+    let fallbackResponse = '';
+    const lowerMessage = message.toLowerCase();
+    
+    // Detect intent and provide contextual response
+    if (lowerMessage.includes('video') || lowerMessage.includes('watch') || lowerMessage.includes('content')) {
+      const videoList = videos.slice(0, 5).map(v => `• ${v.title} (${v.subject}) - ${v.views} views, ${v.likes} likes`).join('\n');
+      fallbackResponse = `📹 **Available Videos on KLH Platform**\n\nWe have ${videos.length}+ videos across subjects like ${subjects.join(', ')}.\n\n**Popular Videos:**\n${videoList}\n\nYou can search or filter by subject to find more!`;
+    } 
+    else if (lowerMessage.includes('playlist') || lowerMessage.includes('collection')) {
+      const playlistList = playlists.slice(0, 5).map(p => `• ${p.name} - ${p.videos.length} videos`).join('\n');
+      fallbackResponse = `📚 **Available Playlists**\n\nWe have ${playlists.length} curated playlists:\n\n${playlistList}\n\nClick on 'Playlists' in the navigation to explore all collections!`;
+    }
+    else if (lowerMessage.includes('subject') || lowerMessage.includes('topic') || lowerMessage.includes('learn')) {
+      fallbackResponse = `🎓 **Available Subjects & Topics**\n\n**Subjects:**\n${subjects.map(s => `• ${s}`).join('\n')}\n\n**Popular Topics:**\n${topics.slice(0, 8).map(t => `• ${t}`).join('\n')}\n\nYou can filter videos by any subject or topic on the homepage!`;
+    }
+    else if (lowerMessage.includes('search') || lowerMessage.includes('find')) {
+      fallbackResponse = `🔍 **How to Search**\n\nYou can find content by:\n• Using the search bar on the homepage\n• Filtering by subject (Programming, Mathematics, Science, Engineering)\n• Filtering by specific topics\n• Sorting by newest, most viewed, or most liked\n\nTry searching for keywords like "data structures" or "machine learning"!`;
+    }
+    else if (lowerMessage.includes('upload') || lowerMessage.includes('add video')) {
+      fallbackResponse = `📤 **Upload Videos**\n\n1. Click "Upload" in the navigation bar\n2. Select your video file (MP4, MOV, AVI supported)\n3. Fill in title, description, subject, and topic\n4. Add relevant tags\n5. Click upload!\n\nYour video will be available to all KLH students and faculty.`;
+    }
+    else if (lowerMessage.includes('programming') || lowerMessage.includes('code')) {
+      const programmingVideos = videos.filter(v => v.subject === 'Programming').slice(0, 3);
+      const videoList = programmingVideos.map(v => `• ${v.title} - ${v.views} views`).join('\n') || '• Check the homepage for programming videos!';
+      fallbackResponse = `💻 **Programming Content**\n\nWe have several programming videos:\n\n${videoList}\n\nFilter by "Programming" subject to see all coding tutorials!`;
+    }
+    else if (lowerMessage.includes('help') || lowerMessage.includes('how to') || lowerMessage.includes('feature')) {
+      fallbackResponse = `🤝 **Platform Features**\n\n✅ **Browse & Watch** - View all educational videos\n✅ **Search & Filter** - Find content by subject/topic\n✅ **Playlists** - Curated video collections\n✅ **Upload** - Share your own educational content\n✅ **Comments & Q&A** - Discuss and ask questions\n✅ **Profile** - Track your uploads and activity\n\nWhat would you like to explore?`;
+    }
+    else {
+      // Generic helpful response
+      fallbackResponse = `👋 **Welcome to KLH Peer Learning!**\n\nI can help you with:\n• Finding videos on ${subjects.slice(0, 3).join(', ')}, and more\n• Exploring our ${playlists.length} curated playlists\n• Learning how to use platform features\n• Discovering popular content\n\n**Try asking:**\n"Show me programming videos"\n"What playlists are available?"\n"How do I upload a video?"\n\nWhat would you like to know?`;
+    }
 
     res.json({
       response: fallbackResponse,
-      timestamp: new Date().toISOString(),
-      error: 'AI service temporarily unavailable'
+      timestamp: new Date().toISOString()
     });
   }
 });
