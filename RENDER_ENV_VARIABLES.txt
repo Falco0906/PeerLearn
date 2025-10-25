@@ -1,0 +1,5 @@
+MONGODB_URI=mongodb+srv://klhuser:KlhPeerLearning123!@perplexedui.j7czeem.mongodb.net/klh-peer-learning?retryWrites=true&w=majority
+JWT_SECRET=klh_jwt_secret_2024_make_this_long_and_random_123
+PORT=5001
+NODE_ENV=production
+FRONTEND_URL=https://your-frontend-url.onrender.com
