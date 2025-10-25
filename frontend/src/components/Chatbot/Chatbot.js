@@ -42,6 +42,20 @@ const Chatbot = () => {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Check if user is logged in
+      if (!token) {
+        const errorMessage = {
+          id: Date.now() + 1,
+          text: "⚠️ Please log in to use the AI chatbot. Click 'Login' in the navigation bar to get started!",
+          sender: 'bot',
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        setIsLoading(false);
+        return;
+      }
+      
       const response = await axios.post(`${API_URL}/api/chatbot/chat`, {
         message: inputMessage
       }, {
@@ -60,9 +74,22 @@ const Chatbot = () => {
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Chatbot error:', error);
+      console.error('Error details:', error.response?.data);
+      
+      let errorText = "I'm sorry, I'm having trouble connecting right now.";
+      
+      // Check if it's an authentication error
+      if (error.response?.status === 401) {
+        errorText = "⚠️ Please log in to use the chatbot. Click 'Login' in the navigation bar to continue.";
+      } else if (error.response?.status === 500) {
+        errorText = "The chatbot service is temporarily unavailable. Our team is working on it!";
+      } else if (!error.response) {
+        errorText = "Unable to connect to the chatbot service. Please check your internet connection.";
+      }
+      
       const errorMessage = {
         id: Date.now() + 1,
-        text: "I'm sorry, I'm having trouble connecting right now. Please try again later or contact support.",
+        text: errorText,
         sender: 'bot',
         timestamp: new Date().toISOString()
       };
