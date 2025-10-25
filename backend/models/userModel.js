@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      enum: ['Engineering', 'Science', 'Arts', 'Commerce', 'Medicine', 'Law'],
+      enum: ['Engineering', 'Computer Science', 'Science', 'Arts', 'Business', 'Commerce', 'Medicine', 'Law'],
       required: true
     },
     uploadedVideos: [

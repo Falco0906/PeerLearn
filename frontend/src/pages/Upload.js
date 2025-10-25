@@ -1,8 +1,11 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Upload as UploadIcon, Video, X } from 'lucide-react';
 import axios from 'axios';
+import Navbar from '../components/Layout/Navbar';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const Upload = () => {
   const navigate = useNavigate();
@@ -61,7 +64,7 @@ const Upload = () => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        'http://localhost:5002/api/videos/upload',
+        `${API_URL}/api/videos/upload`,
         uploadData,
         {
           headers: {
@@ -82,7 +85,9 @@ const Upload = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <>
+      <Navbar />
+      <div className="max-w-4xl mx-auto py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Upload Video</h1>
       
       <div className="bg-white rounded-xl p-8 shadow-lg">
@@ -235,6 +240,7 @@ const Upload = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

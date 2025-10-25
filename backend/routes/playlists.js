@@ -58,7 +58,14 @@ router.get('/:id', async (req, res) => {
   try {
     const playlist = await Playlist.findById(req.params.id)
       .populate('creator', 'name email profileImage')
-      .populate('videos', 'title description thumbnailUrl duration views likes subject topic uploader')
+      .populate({
+        path: 'videos',
+        select: 'title description thumbnailUrl videoUrl duration views likes subject topic uploader createdAt tags',
+        populate: {
+          path: 'uploader',
+          select: 'name email profileImage'
+        }
+      })
       .populate('followers', 'name email profileImage');
 
     if (!playlist) {

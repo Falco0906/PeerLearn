@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Search, Grid, List, Filter, TrendingUp, Clock, Star, Play } from 'lucide-react';
 import VideoCard from '../components/Video/VideoCard';
+import Navbar from '../components/Layout/Navbar';
+import Chatbot from '../components/Chatbot/Chatbot';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const Home = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -20,7 +24,7 @@ const Home = () => {
             if (topicFilter) params.topic = topicFilter;
 
             try {
-                const response = await axios.get('http://localhost:5002/api/videos', { params });
+                const response = await axios.get(`${API_URL}/api/videos`, { params });
                 return response.data;
             } catch (error) {
                 console.error('Error fetching videos:', error);
@@ -45,8 +49,10 @@ const Home = () => {
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-            <div className="container mx-auto px-6 py-8">
+        <>
+            <Navbar />
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+                <div className="container mx-auto px-6 py-8">
                 {/* Hero Section with Stats */}
                 <div className="mb-12">
                     <div className="flex items-center justify-between mb-6">
@@ -237,8 +243,10 @@ const Home = () => {
                         </button>
                     </div>
                 )}
+                </div>
             </div>
-        </div>
+            <Chatbot />
+        </>
     );
 };
 

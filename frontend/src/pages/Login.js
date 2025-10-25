@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, Building, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import '../login.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, register: authRegister } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,15 +45,10 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', loginData);
-      
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
       await authLogin(loginData.email, loginData.password);
-      
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => navigate('/'), 1000);
     } catch (err) {
@@ -67,15 +62,10 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/register', registerData);
-      
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      await authLogin(registerData.email, registerData.password);
-      
+      await authRegister(registerData);
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => navigate('/'), 1000);
     } catch (err) {
@@ -86,34 +76,28 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 overflow-hidden">
+    <div className="login-container">
+      <div className="login-card">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-center">
-          <div className="inline-block p-3 bg-white bg-opacity-20 rounded-2xl mb-4 backdrop-blur-sm">
-            <Building className="text-white" size={40} />
+        <div className="login-header">
+          <div style={{ display: 'inline-block', padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '1rem', marginBottom: '1rem' }}>
+            <Building color="white" size={40} />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            KLH Peer Learning
-          </h1>
-          <p className="text-indigo-100">
+          <h1>KLH Peer Learning</h1>
+          <p>
             {isLogin ? 'Welcome back! Sign in to continue' : 'Create your account to get started'}
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        <div className="login-tabs">
           <button
             onClick={() => {
               setIsLogin(true);
               setError('');
               setSuccess('');
             }}
-            className={`flex-1 py-4 font-semibold transition-all ${
-              isLogin
-                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`login-tab ${isLogin ? 'active' : ''}`}
           >
             Login
           </button>
@@ -123,67 +107,61 @@ const Login = () => {
               setError('');
               setSuccess('');
             }}
-            className={`flex-1 py-4 font-semibold transition-all ${
-              !isLogin
-                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`login-tab ${!isLogin ? 'active' : ''}`}
           >
             Register
           </button>
         </div>
 
         {/* Alert Messages */}
-        <div className="p-6 pb-0">
+        <div style={{ padding: '1.5rem 1.5rem 0 1.5rem' }}>
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3">
-              <AlertCircle className="text-red-500 mt-0.5" size={20} />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="alert alert-error">
+              <AlertCircle size={20} />
+              <span>{error}</span>
             </div>
           )}
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start space-x-3">
-              <CheckCircle className="text-green-500 mt-0.5" size={20} />
-              <span className="text-green-700 text-sm">{success}</span>
+            <div className="alert alert-success">
+              <CheckCircle size={20} />
+              <span>{success}</span>
             </div>
           )}
         </div>
 
         {/* Forms */}
-        <div className="p-6">
+        <div className="login-form">
           {isLogin ? (
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="email"
                     name="email"
                     value={loginData.email}
                     onChange={handleLoginChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="your.email@klh.edu.in"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="password"
                     name="password"
                     value={loginData.password}
                     onChange={handleLoginChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="Enter your password"
                   />
                 </div>
@@ -192,47 +170,34 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="form-button"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Signing in...
-                  </span>
-                ) : (
-                  'Sign In'
-                )}
+                {loading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <div style={{ position: 'relative' }}>
+                  <User style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="text"
                     name="name"
                     value={registerData.name}
                     onChange={handleRegisterChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="John Doe"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  University ID
-                </label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="form-group">
+                <label className="form-label">University ID</label>
+                <div style={{ position: 'relative' }}>
+                  <CreditCard style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="text"
                     name="universityId"
@@ -241,24 +206,24 @@ const Login = () => {
                     required
                     pattern="KLH\d{3,}"
                     title="University ID must start with KLH followed by at least 3 digits (e.g., KLH001)"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="KLH001"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department
-                </label>
-                <div className="relative">
-                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="form-group">
+                <label className="form-label">Department</label>
+                <div style={{ position: 'relative' }}>
+                  <Building style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <select
                     name="department"
                     value={registerData.department}
                     onChange={handleRegisterChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none bg-white"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem', appearance: 'none', background: 'white' }}
                   >
                     <option value="Engineering">Engineering</option>
                     <option value="Computer Science">Computer Science</option>
@@ -269,30 +234,27 @@ const Login = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="email"
                     name="email"
                     value={registerData.email}
                     onChange={handleRegisterChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="your.email@klh.edu.in"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                   <input
                     type="password"
                     name="password"
@@ -300,7 +262,8 @@ const Login = () => {
                     onChange={handleRegisterChange}
                     required
                     minLength="6"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem' }}
                     placeholder="Create a password (min 6 characters)"
                   />
                 </div>
@@ -309,19 +272,9 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="form-button"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
-                  </span>
-                ) : (
-                  'Create Account'
-                )}
+                {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
           )}

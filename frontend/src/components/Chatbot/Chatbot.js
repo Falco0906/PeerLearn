@@ -1,6 +1,8 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, X, Bot, User } from 'lucide-react';
 import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +42,7 @@ const Chatbot = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('/api/chatbot/chat', {
+      const response = await axios.post(`${API_URL}/api/chatbot/chat`, {
         message: inputMessage
       }, {
         headers: {

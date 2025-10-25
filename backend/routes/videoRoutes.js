@@ -249,14 +249,15 @@ router.post('/upload', verifyToken, upload.single('video'), async (req, res) => 
       description,
       subject,
       topic,
-      tags: tags.split(',').map(t => t.trim()),
+      tags: typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : [],
       uploader: req.userId,
       videoUrl: `/uploads/videos/${req.file.filename}`,
       thumbnailUrl: null,
       duration: 0,
-      isProcessing: true,
+      fileSize: req.file.size,
+      isProcessing: false,  // Set to false so video shows immediately
       processingStatus: {
-        transcript: 'processing',
+        transcript: 'pending',
         summary: 'pending'
       }
     });
@@ -268,6 +269,9 @@ router.post('/upload', verifyToken, upload.single('video'), async (req, res) => 
       req.userId,
       { $push: { uploadedVideos: video._id } }
     );
+
+    // Populate the uploader before sending response
+    await video.populate('uploader', 'name email profileImage');
 
     // Generate transcript and summary asynchronously
     setTimeout(async () => {
@@ -310,11 +314,7 @@ router.post('/upload', verifyToken, upload.single('video'), async (req, res) => 
 
     res.status(201).json({
       message: 'Video uploaded successfully. Transcript and summary will be generated shortly.',
-      video: {
-        ...video.toObject(),
-        transcript: null,
-        summary: null
-      }
+      video: video
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

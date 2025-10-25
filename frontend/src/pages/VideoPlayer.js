@@ -1,8 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThumbsUp, Eye, MessageCircle, HelpCircle, Share2 } from 'lucide-react';
 import axios from 'axios';
+import Navbar from '../components/Layout/Navbar';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const VideoPlayer = () => {
   const { id } = useParams();
@@ -13,20 +16,20 @@ const VideoPlayer = () => {
   const [questionText, setQuestionText] = useState('');
   const [activeTab, setActiveTab] = useState('comments');
 
-  useEffect(() => {
-    fetchVideo();
-  }, [id]);
-
-  const fetchVideo = async () => {
+  const fetchVideo = useCallback(async () => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/videos/${id}`);
+      const response = await axios.get(`${API_URL}/api/videos/${id}`);
       setVideo(response.data);
     } catch (error) {
       console.error('Error fetching video:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchVideo();
+  }, [fetchVideo]);
 
   const handleLike = async () => {
     if (!user) {
@@ -37,7 +40,7 @@ const VideoPlayer = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5002/api/videos/${id}/like`,
+        `${API_URL}/api/videos/${id}/like`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -59,7 +62,7 @@ const VideoPlayer = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5002/api/comments',
+        `${API_URL}/api/comments`,
         { text: commentText, videoId: id },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -82,7 +85,7 @@ const VideoPlayer = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5002/api/qa',
+        `${API_URL}/api/qa`,
         { question: questionText, videoId: id },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -112,13 +115,15 @@ const VideoPlayer = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <>
+      <Navbar />
+      <div className="max-w-6xl mx-auto py-8 px-6">
       {/* Video Player */}
       <div className="bg-black aspect-video rounded-lg overflow-hidden mb-6">
         <video
           controls
           className="w-full h-full"
-          src={`http://localhost:5002${video.videoUrl}`}
+          src={`${API_URL}${video.videoUrl}`}
         >
           Your browser does not support the video tag.
         </video>
@@ -298,6 +303,7 @@ const VideoPlayer = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

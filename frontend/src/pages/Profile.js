@@ -1,8 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Building, Video, ListChecks, Edit2, Save } from 'lucide-react';
 import axios from 'axios';
+import Navbar from '../components/Layout/Navbar';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -16,20 +19,20 @@ const Profile = () => {
     department: ''
   });
 
-  useEffect(() => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user) {
       navigate('/login');
       return;
     }
-    fetchUserProfile();
-  }, [user]);
 
-  const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        navigate('/login');
+        return;
+      }
 
-      const response = await axios.get('http://localhost:5002/api/auth/me', {
+      const response = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserProfile(response.data);
@@ -45,7 +48,11 @@ const Profile = () => {
         navigate('/login');
       }
     }
-  };
+  }, [user, navigate, logout]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -59,7 +66,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://localhost:5002/api/auth/update/${userProfile._id}`,
+        `${API_URL}/api/auth/update/${userProfile._id}`,
         formData,
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -85,7 +92,9 @@ const Profile = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <>
+      <Navbar />
+      <div className="max-w-4xl mx-auto py-8">
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-32"></div>
@@ -252,6 +261,7 @@ const Profile = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -35,7 +35,65 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// Custom video streaming with Range support
+const fs = require('fs');
+
+app.get('/uploads/videos/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filepath = path.join(__dirname, 'uploads', 'videos', filename);
+
+  // Check if file exists
+  if (!fs.existsSync(filepath)) {
+    return res.status(404).send('Video not found');
+  }
+
+  const stat = fs.statSync(filepath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  // Set MIME type
+  const ext = path.extname(filename).toLowerCase();
+  const mimeTypes = {
+    '.mp4': 'video/mp4',
+    '.mov': 'video/quicktime',
+    '.avi': 'video/x-msvideo',
+    '.mpeg': 'video/mpeg',
+    '.mpg': 'video/mpeg',
+    '.webm': 'video/webm'
+  };
+  const contentType = mimeTypes[ext] || 'video/mp4';
+
+  if (range) {
+    // Parse range header
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = (end - start) + 1;
+    const file = fs.createReadStream(filepath, { start, end });
+    
+    const head = {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': contentType,
+    };
+    
+    res.writeHead(206, head);
+    file.pipe(res);
+  } else {
+    // No range, send entire file
+    const head = {
+      'Content-Length': fileSize,
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes'
+    };
+    
+    res.writeHead(200, head);
+    fs.createReadStream(filepath).pipe(res);
+  }
+});
+
+// Serve other static files (thumbnails, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
