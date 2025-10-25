@@ -17,29 +17,15 @@ const chatbotRoutes = require('./routes/chatbot');
 const playlistRoutes = require('./routes/playlists');
 const errorHandler = require('./middleware/errorHandler');
 
-// Configure CORS FIRST - before other middleware
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://peerlearn-frontend.onrender.com',
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
+// Configure CORS - Allow all origins temporarily for debugging
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('Blocked by CORS:', origin);
-      callback(null, true); // Allow for now, can restrict later
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Helmet with CORS-friendly settings
