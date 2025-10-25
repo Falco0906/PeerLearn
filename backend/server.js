@@ -17,15 +17,28 @@ const chatbotRoutes = require('./routes/chatbot');
 const playlistRoutes = require('./routes/playlists');
 const errorHandler = require('./middleware/errorHandler');
 
-// Configure CORS - Allow all origins temporarily for debugging
+// Configure CORS - Allow all origins
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Log CORS requests for debugging
+  console.log('CORS Request:', req.method, req.path, 'Origin:', req.headers.origin);
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
 // Helmet with CORS-friendly settings
@@ -117,6 +130,15 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     message: 'KLH Peer Learning Backend is running!',
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test CORS endpoint
+app.get('/api/test-cors', (req, res) => {
+  res.json({
+    message: 'CORS is working!',
+    origin: req.headers.origin,
     timestamp: new Date().toISOString()
   });
 });
