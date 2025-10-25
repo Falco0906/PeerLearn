@@ -55,6 +55,12 @@ const userSchema = new mongoose.Schema(
         ref: 'Video'
       }
     ],
+    createdPlaylists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Playlist'
+      }
+    ],
     playlists: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -13,6 +13,8 @@ const authRoutes = require('./routes/authRoutes');
 const videoRoutes = require('./routes/videoRoutes');
 const commentRoutes = require('./routes/comments');
 const qaRoutes = require('./routes/qa');
+const chatbotRoutes = require('./routes/chatbot');
+const playlistRoutes = require('./routes/playlists');
 const errorHandler = require('./middleware/errorHandler');
 
 // Rate limiting
@@ -24,7 +26,12 @@ app.use(limiter);
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,6 +43,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/qa', qaRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/playlists', playlistRoutes);
 
 // Test routes
 app.get('/api/health', (req, res) => {
