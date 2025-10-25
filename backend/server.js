@@ -17,17 +17,7 @@ const chatbotRoutes = require('./routes/chatbot');
 const playlistRoutes = require('./routes/playlists');
 const errorHandler = require('./middleware/errorHandler');
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000
-});
-app.use(limiter);
-
-// Middleware
-app.use(helmet());
-
-// Configure CORS to allow both local and production frontend
+// Configure CORS FIRST - before other middleware
 const allowedOrigins = [
   'http://localhost:3000',
   'https://peerlearn-frontend.onrender.com',
@@ -48,8 +38,21 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
+
+// Helmet with CORS-friendly settings
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000
+});
+app.use(limiter);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
